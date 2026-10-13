@@ -1,0 +1,218 @@
+:root {
+  --bg: #0b0d13;
+  --ink: #e8eaf2;
+  --ink-dim: #8c93a6;
+  --accent: #7de2d1;
+  --panel: rgba(22, 25, 35, 0.6);
+  --line: rgba(255, 255, 255, 0.09);
+  --radius: 18px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 14px/1.4 'Hanken Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.idle {
+  cursor: none;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---- Controls ---- */
+.dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  padding-inline: 16px;
+  pointer-events: none;
+}
+
+.dock-inner {
+  width: min(520px, 100%);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  transition: transform 0.15s ease;
+}
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  margin-inline: 6px;
+  background: var(--line);
+}
+
+.source-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--ink-dim);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.source-btn:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+}
+.source-btn[aria-pressed='true'] {
+  color: var(--accent);
+  background: rgba(125, 226, 209, 0.12);
+}
+
+/* ---- Scrubber ---- */
+.scrubber {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 4px;
+}
+
+.time {
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scrubber input[type='range'] {
+  flex: 1;
+  height: 16px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.scrubber input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--ink) var(--progress), rgba(255, 255, 255, 0.15) var(--progress));
+}
+.scrubber input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.scrubber input[type='range']::-moz-range-progress {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.scrubber input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 0;
+}
+.scrubber input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 0;
+}
+
+/* ---- Overlays ---- */
+.toast {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  left: 50%;
+  translate: -50% 0;
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(40, 24, 30, 0.85);
+  border: 1px solid rgba(255, 130, 130, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.drop {
+  position: fixed;
+  inset: 16px;
+  display: grid;
+  place-items: center;
+  border: 1.5px dashed var(--accent);
+  border-radius: 24px;
+  background: rgba(11, 13, 19, 0.7);
+  backdrop-filter: blur(6px);
+  font-size: 22px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

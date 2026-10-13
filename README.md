@@ -1,4 +1,4 @@
-# Vybe
+# VYBE
 
 Vybe is a lightweight audio visualizer built with React, TypeScript, and the Web Audio API. It turns live audio from a microphone, browser tab, or uploaded file into a responsive animated waveform experience.
 

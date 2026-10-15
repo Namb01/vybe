@@ -2,12 +2,15 @@ import { useRef } from 'react';
 import type { EngineState } from '../audio/AudioEngine';
 import type { SourceKind } from '../audio/types';
 import { Scrubber } from './Scrubber';
+import { SettingsMenu } from './SettingsMenu';
 
 interface Props {
   state: EngineState;
   onPick: (kind: Exclude<SourceKind, 'file'>) => void;
   onFile: (file: File) => void;
   onToggle: () => void;
+  settingsOpen: boolean;
+  onSettingsOpenChange: (open: boolean) => void;
 }
 
 const OPTIONS: { kind: SourceKind; label: string }[] = [
@@ -16,7 +19,7 @@ const OPTIONS: { kind: SourceKind; label: string }[] = [
   { kind: 'tab', label: 'Tab audio' },
 ];
 
-export function Controls({ state, onPick, onFile, onToggle }: Props) {
+export function Controls({ state, onPick, onFile, onToggle, settingsOpen, onSettingsOpenChange }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const hasSource = state.kind !== null;
 
@@ -53,6 +56,8 @@ export function Controls({ state, onPick, onFile, onToggle }: Props) {
             {label}
           </button>
         ))}
+
+        <SettingsMenu open={settingsOpen} onOpenChange={onSettingsOpenChange} />
 
         <input
           ref={fileInput}

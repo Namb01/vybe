@@ -139,6 +139,10 @@ export class AudioEngine {
     if (this.monitor && this.current?.audible) this.monitor.gain.value = this.volume;
   }
 
+  get sampleRate() {
+    return this.ctx?.sampleRate ?? 48000;
+  }
+
   // ---- Per-frame read (called from the render loop) ----
   /** Fills `frequency` and `waveform`. Returns false when there's nothing playing. */
   read(): boolean {

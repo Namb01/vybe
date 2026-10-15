@@ -6,14 +6,23 @@ import { AudioSourceError, type SourceFactory } from './audio/types';
 import { CanvasHost } from './components/CanvasHost';
 import { Controls } from './components/Controls';
 import { useIdle } from './hooks/useIdle';
-import { createBars } from './visualizers/bars';
+import { useResolvedTheme } from './hooks/useResolvedTheme';
+import { useSettings } from './state/settings';
+import { buildPalette, uiAccent } from './theme/accents';
+import { VISUALIZERS } from './visualizers';
 
 export default function App() {
   const { engine, state } = useAudioEngine();
-  const visualizer = useMemo(() => createBars(), []);
+  const settings = useSettings();
+  const resolvedTheme = useResolvedTheme(settings.theme);
+  const light = resolvedTheme === 'light';
+  const palette = useMemo(() => buildPalette(settings.accent, light), [settings.accent, light]);
+  // A fresh instance per mode, so each visualizer starts with clean state.
+  const visualizer = useMemo(() => VISUALIZERS.find((v) => v.id === settings.visualizer)!.create(), [settings.visualizer]);
   const idle = useIdle(3000);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const run = async (factory: SourceFactory) => {
     setError(null);
@@ -24,8 +33,16 @@ export default function App() {
     }
   };
 
-  // Controls fade away while the music plays, but stay put on the empty state.
-  const hideControls = idle && state.kind !== null && state.playing;
+  // Push the theme and accent into CSS.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.theme = resolvedTheme;
+    root.style.setProperty('--accent', uiAccent(settings.accent, light));
+  }, [resolvedTheme, settings.accent, light]);
+
+  // Controls fade away while the music plays, but stay put on the empty state
+  // and while the settings menu is open.
+  const hideControls = idle && state.kind !== null && state.playing && !settingsOpen;
   useEffect(() => {
     document.body.classList.toggle('idle', hideControls);
   }, [hideControls]);
@@ -76,7 +93,7 @@ export default function App() {
 
   return (
     <>
-      <CanvasHost engine={engine} visualizer={visualizer} />
+      <CanvasHost engine={engine} visualizer={visualizer} palette={palette} />
 
       <div className="dock">
         <motion.div
@@ -90,6 +107,8 @@ export default function App() {
             onPick={(kind) => run(kind === 'mic' ? micSource : tabSource)}
             onFile={(file) => run(fileSource(file))}
             onToggle={() => void engine.toggle()}
+            settingsOpen={settingsOpen}
+            onSettingsOpenChange={setSettingsOpen}
           />
         </motion.div>
       </div>

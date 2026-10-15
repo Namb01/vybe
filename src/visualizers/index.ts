@@ -11,13 +11,13 @@ export const VISUALIZERS = [
   {
     id: 'spectrum',
     name: 'Frequency spectrum',
-    description: 'Animated bars that bounce with the bass, mids and treble, with gradients, glow and smooth transitions.',
+    description: 'Animated bars that bounce with the bass, mids and treble.',
     create: createSpectrum,
   },
   {
     id: 'radial',
     name: 'Radial pulse',
-    description: 'A glowing ring that expands and contracts with the music.',
+    description: 'Spikes radiate from a pulsing ring, shaped by the frequencies in the music.',
     create: createRadial,
   },
 ] as const satisfies readonly { id: string; name: string; description: string; create: () => Visualizer }[];

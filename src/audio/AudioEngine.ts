@@ -55,8 +55,14 @@ export class AudioEngine {
     if (this.ctx) return;
     const ctx = new AudioContext();
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.8;
+    // 4096 gives ~12 Hz per bin at 48 kHz, enough to keep bass bars distinct.
+    // Light smoothing, because the visualizers apply their own attack/release.
+    // A wider dB window than the default (-100 to -30) stops loud music
+    // from pinning many bins at the maximum.
+    analyser.fftSize = 4096;
+    analyser.smoothingTimeConstant = 0.5;
+    analyser.minDecibels = -85;
+    analyser.maxDecibels = -15;
     const monitor = ctx.createGain();
     analyser.connect(monitor);
     monitor.connect(ctx.destination);

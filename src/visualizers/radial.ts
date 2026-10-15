@@ -1,10 +1,11 @@
 import { rgba } from '../theme/accents';
+import { SpectrumBands } from './audio';
 import type { Visualizer } from './types';
 
 const MAX_SPIKES = 180;
 const SPIKE_PITCH = 9; // target px between spikes along the ring
 const WAVE_POINTS = 160; // vertices on the inner waveform ring
-const WAVE_SMOOTH = 6; // waveform samples averaged each side of a vertex
+const WAVE_SMOOTH = 12; // waveform samples averaged each side of a vertex
 const TAU = Math.PI * 2;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -16,6 +17,8 @@ const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
  */
 export function createRadial(): Visualizer {
   const levels = new Float32Array(MAX_SPIKES);
+  const targets = new Float32Array(MAX_SPIKES / 2 + 1);
+  const mapper = new SpectrumBands();
   const disp = new Float32Array(WAVE_POINTS);
   const wx = new Float32Array(WAVE_POINTS);
   const wy = new Float32Array(WAVE_POINTS);
@@ -54,31 +57,23 @@ export function createRadial(): Visualizer {
       if (!still) spin += f.dt * 0.3;
 
       // ---- Spike levels from the spectrum ----
-      const n = Math.min(MAX_SPIKES, Math.max(48, Math.floor((TAU * R) / SPIKE_PITCH)));
+      // An even count keeps the left and right halves exact mirrors.
+      const n = Math.min(MAX_SPIKES, Math.max(48, Math.floor((TAU * R) / SPIKE_PITCH / 2) * 2));
       const half = n / 2;
-      const bins = f.frequency.length;
-      const minBin = 2;
-      const maxBin = Math.max(minBin + half, Math.floor(bins * 0.7));
-      const attack = 1 - Math.exp(-34 * f.dt);
-      const release = 1 - Math.exp(-7 * f.dt);
+      const attack = 1 - Math.exp(-40 * f.dt);
+      const release = 1 - Math.exp(-9 * f.dt);
+
+      if (f.active) mapper.read(targets, half + 1, f.frequency, f.sampleRate, f.dt);
 
       for (let i = 0; i < n; i++) {
         // Mirror so the left and right halves match: index 0 sits at the bottom
         // (lowest frequencies) and the top of the ring holds the highest.
         const k = i <= half ? i : n - i;
-        const pos = k / half;
-        let target: number;
-        if (f.active) {
-          const lo = Math.floor(minBin * (maxBin / minBin) ** pos);
-          const hi = Math.max(lo + 1, Math.ceil(minBin * (maxBin / minBin) ** ((k + 1) / half)));
-          let sum = 0;
-          for (let b = lo; b < hi; b++) sum += f.frequency[b];
-          const raw = (sum / (hi - lo) / 255) * (0.8 + 0.5 * pos);
-          // Cut the floor and curve upward so quiet bands stay short and loud ones spike.
-          target = clamp01((raw - 0.12) / 0.88) ** 1.4;
-        } else {
-          target = still ? 0.02 : 0.025 + 0.03 * (0.5 + 0.5 * Math.sin(f.time * 1.1 + pos * 12));
-        }
+        const target = f.active
+          ? targets[k]
+          : still
+            ? 0.02
+            : 0.025 + 0.03 * (0.5 + 0.5 * Math.sin(f.time * 1.1 + (k / half) * 12));
         levels[i] += (target - levels[i]) * (target > levels[i] ? attack : release);
       }
 

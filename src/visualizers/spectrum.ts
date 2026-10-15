@@ -1,4 +1,5 @@
 import { rgba } from '../theme/accents';
+import { SpectrumBands } from './audio';
 import type { Visualizer } from './types';
 
 const MAX_BARS = 256;
@@ -13,6 +14,8 @@ export function createSpectrum(): Visualizer {
   const levels = new Float32Array(MAX_BARS);
   const peaks = new Float32Array(MAX_BARS);
   const heights = new Float32Array(MAX_BARS);
+  const targets = new Float32Array(MAX_BARS);
+  const mapper = new SpectrumBands();
   let energy = 0;
 
   return {
@@ -21,9 +24,6 @@ export function createSpectrum(): Visualizer {
       const p = f.palette;
 
       const n = Math.min(MAX_BARS, Math.max(24, Math.floor(w / BAR_PITCH)));
-      const bins = f.frequency.length;
-      const minBin = 2;
-      const maxBin = Math.max(minBin + n, Math.floor(bins * 0.7));
 
       // Bars (and the gaps between them) fill the screen edge to edge.
       const barW = w / (n + GAP * (n - 1));
@@ -33,19 +33,16 @@ export function createSpectrum(): Visualizer {
       const reflH = h * 0.2;
       const radius = Math.min(barW / 2, 3);
 
-      const attack = 1 - Math.exp(-32 * f.dt);
-      const release = 1 - Math.exp(-6 * f.dt);
+      const attack = 1 - Math.exp(-40 * f.dt);
+      const release = 1 - Math.exp(-9 * f.dt);
       let total = 0;
+
+      if (f.active) mapper.read(targets, n, f.frequency, f.sampleRate, f.dt);
 
       for (let i = 0; i < n; i++) {
         let target: number;
         if (f.active) {
-          // Log-spaced bins, so bass doesn't get one bar and treble get forty.
-          const lo = Math.floor(minBin * (maxBin / minBin) ** (i / n));
-          const hi = Math.max(lo + 1, Math.ceil(minBin * (maxBin / minBin) ** ((i + 1) / n)));
-          let sum = 0;
-          for (let b = lo; b < hi; b++) sum += f.frequency[b];
-          target = Math.min(1, (sum / (hi - lo) / 255) * (0.8 + 0.5 * (i / n)));
+          target = targets[i];
         } else {
           const breath = f.reducedMotion ? 0 : 0.5 + 0.5 * Math.sin(f.time * 1.1 + i * 0.35);
           target = 0.02 + 0.03 * breath;

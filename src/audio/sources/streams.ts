@@ -1,3 +1,5 @@
+// This file contains functions to create audio sources from the microphone
+
 import { AudioSourceError, type AudioSource, type SourceKind } from '../types';
 
 // Raw signal, no processing: voice-call filters would flatten music.

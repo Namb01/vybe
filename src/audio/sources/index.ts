@@ -1,3 +1,5 @@
+// exports the source factories (fileSource, micSource, tabSource) so App.tsx can import them from one place.
+
 import type { SourceFactory } from '../types';
 import { createFileSource } from './file';
 import { createMicSource, createTabSource } from './streams';

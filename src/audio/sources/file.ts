@@ -1,3 +1,5 @@
+// This file contains functions to create audio sources from files
+
 import { AudioSourceError, type AudioSource } from '../types';
 
 const AUDIO_EXT = /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)$/i;
